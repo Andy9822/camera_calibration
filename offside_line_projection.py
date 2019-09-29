@@ -13,28 +13,7 @@ def transform_point(point, projection_matrix):
     x,y = coordinates[0], coordinates[1]
     return (x,y)
 
-def calculate_offside_points(matrix,x,y):
-    #Calculates inverse matrix to transform from image to world coordinates
-    inverse_matrix = np.linalg.inv(matrix)
-
-    #Tansforms the selected point from image to world coordinates
-    world_point = transform_point((x,y), inverse_matrix)
-    y = world_point[1]
-
-    #To draw the offside line we will have to find 2 points
-    #for that we simply mantain constant our Y of the world coordinate and use the minimum and
-    #maximum possible value for x. So we have a straight line crossing our selected point
-    #and also paralel the the goal line
-    point1 = np.array([0, y])
-    point2 = np.array([MAX_WIDTH, y])
-
-    # Now we transform each of these 2 points to image/pixel coordinates
-    offside_point_1 = transform_point(point1, matrix)
-    offside_point_2 = transform_point(point2, matrix)
-
-    return int(round(offside_point_1[0])), int(round(offside_point_1[1])), int(round(offside_point_2[0])), int(round(offside_point_2[1]))
-
-# Camera matrix to relate image (2D) points with world (2D) points (it`s homography)
+# Camera matrix to relate image (2D) points with world (2D) points (its homography)
 # matrix =
 #     [x[0], y[0], 1, 0, 0, 0, -u[0] * x[0], - u[0] * y[0], -u[0]],
 #     [0, 0, 0, x[0], y[0], 1, -v[0] * x[0], - v[0] * y[0], -v[0]],
@@ -69,16 +48,12 @@ def calculate_projection_matrix():
         [68, 0], #limite inferior da area grande
         [0, 11], #limite superior area pequena
         [68, 11], #limite inferior area pequena
-        # [0, 17], #linha de fundo superior
-        # [29,17] # canto pequena area superior
         ])
     image_points = np.array([
-        [269, 25],#limite superior da area grande
+        [268, 23],#limite superior da area grande
         [264, 344],#limite inferior da area grande
-        [442, 27], #limite superior area pequena
+        [440, 24], #limite superior area pequena
         [586, 346],#limite inferior area pequena
-        # [526, 27], #linha de fundo superior
-        # [576, 102] # canto pequena area superior
         ])
 
     x = world_points[:, 0]
@@ -87,6 +62,27 @@ def calculate_projection_matrix():
     v = image_points[:, 1]
 
     return compute_homography_2d(x, y, u, v)
+
+def calculate_offside_points(matrix,x,y):
+    #Calculates inverse matrix to transform from image to world coordinates
+    inverse_matrix = np.linalg.inv(matrix)
+
+    #Tansforms the selected point from image to world coordinates
+    world_point = transform_point((x,y), inverse_matrix)
+    y = world_point[1]
+
+    #To draw the offside line we will have to find 2 points
+    #for that we simply keep constant our Y of the world coordinate and use the minimum and
+    #maximum possible value for x. So we have a straight line crossing our selected point
+    #and also paralel the the goal line
+    point1 = np.array([0, y])
+    point2 = np.array([MAX_WIDTH, y])
+
+    # Now we transform each of these 2 points to image/pixel coordinates
+    offside_point_1 = transform_point(point1, matrix)
+    offside_point_2 = transform_point(point2, matrix)
+
+    return int(round(offside_point_1[0])), int(round(offside_point_1[1])), int(round(offside_point_2[0])), int(round(offside_point_2[1]))
 
 def mouse_drawing(event, x, y, flags, data):
     if event == cv2.EVENT_LBUTTONDOWN:
@@ -98,8 +94,8 @@ def mouse_drawing(event, x, y, flags, data):
 
 # função main em python
 if __name__ == '__main__' :
-
-    data = {} #We define a dic with our projection matrix and image
+    #We define a dic with our projection matrix and image
+    data = {}
     data["matrix"] = calculate_projection_matrix() # We calculate the planar homography to transform points
     data["image"] = cv2.imread('maracana2.jpg')
 
