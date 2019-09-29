@@ -23,41 +23,33 @@ def compute_camera_matrix(x, y, z, u, v):
 
     return m
 
-def calculate_transformation_matrix():
+def calculate_projection_matrix():
     # We define our calibration points in world and image coordinates
     # Calibration points
     image_points = np.array([
-    # Linha de fundo
-    [275, 84],
-    [227, 107],
-    [159, 141],
-    [125, 158],
-    [31, 205],
-      # Canto inferior direito da grande area
-    [250, 222],
-      # Cantos superiores da goleira
-    [158, 112],
-    [124, 128],
-      # Cantos da direita da pequena area
-    [241, 132],
-    [160, 177]
+    [275,84],      # escanteio superiors
+    [227,107],     # borda exterior superior area pequena
+    [159,141],     # trave superior ou esquerda
+    [125,158],     # trave inferior ou direita
+    [158,112],     # angulo superior ou da esquerda da goleira
+    [124,128],     # angulo inferior ou direito da goleira
+    [31,205],      # Canto inferior direito da grande area
+    [250,222],     # Canto inferior direito da pequena area
+    [241,132],     # borda externa superior ou esquerda da pequena area
+    [160,177]      # borda externa inferior ou direita da pequena area
     ])
 
     world_points = np.array([
-    # Linha de fundo
-    [0, 0, 0],
-    [0, 13.84, 0],
-    [0, 30.34, 0],
-    [0, 37.66, 0],
-    [0, 54.16, 0],
-    # Canto inferior direito da grande area
-    [16.5, 54.16, 0],
-    # Cantos superiores da goleira
-    [0, 30.34, 2.44],
-    [0, 37.66, 2.44],
-    # Cantos da direita da pequena area
-    [5.5 ,24.84 , 0],
-    [5.5 ,43.16 , 0]
+    [0, 0, 0],     # escanteio superiors
+    [13.84, 0, 0],     # borda exterior superior area pequena
+    [30.34, 0, 0],     # trave superior ou esquerda
+    [37.66, 0, 0],     # trave inferior ou direita
+    [30.34, 0, 2.44],  # angulo superior ou da esquerda da goleira
+    [37.66, 0, 2.44],  # angulo inferior ou direito da goleira
+    [54.16, 0, 0],     # Canto inferior direito da grande area
+    [54.16, 16.5, 0],  # Canto inferior direito da pequena area
+    [24.84, 5.5, 0],   # borda externa superior ou esquerda da pequena area
+    [43.16, 5.5, 0]    # borda externa inferior ou direita da pequena area
     ])
 
     x = world_points[:, 0]
@@ -68,7 +60,7 @@ def calculate_transformation_matrix():
 
     return compute_camera_matrix(x, y, z, u, v)
 
-#We transform our world point/coordinate to a pixel coordinate using the dot producit with the transformation matrix
+#We transform our world point/coordinate to a pixel coordinate using the dot producit with the projection matrix
 def transform_world_point(point, matrix):
     #We convert the point to homogeneous coordinates adding one more dimension with value 1 to our vector
     homogeneous_coordinates = np.array([point[0], point[1], point[2], 1])
@@ -127,9 +119,9 @@ def mouse_drawing(event, x, y, flags, data):
 
 # função main em python
 if __name__ == '__main__' :
-    #We define a dic with our transformation matrix and image
+    #We define a dic with our projection matrix and image
     data = {}
-    data["matrix"] = calculate_transformation_matrix()
+    data["matrix"] = calculate_projection_matrix()
     data["image"] = cv2.imread('maracana1.jpg') # Carrega e mostra a imagem
 
     # We show the image and set the callback to draw the line when clicked on the image
