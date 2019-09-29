@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
 
-HEIGHT = 75
+MAX_LENGTH = 17
+MAX_WIDTH = 68
 
 # Camera matrix to relate image (2D) points with world (2D) points
 # matrix =
@@ -22,7 +23,7 @@ def compute_homography_2d(u, v, x, y):
     u, s, vh = np.linalg.svd(matrix)
     last_line_vh = vh[-1]
 
-    #The 8 values from the last row of Vh are our answer values
+    #The values from the last row of Vh are our answer values
     # so we reconstruct our homography matrix from these values
     h = np.array([
         [vh[8][0], vh[8][1], vh[8][2]],
@@ -34,8 +35,22 @@ def compute_homography_2d(u, v, x, y):
 
 def calculate_transformation_matrix():
     # We define our calibration points in world and image coordinates
-    world_points = np.array([[0, 0], [0, HEIGHT], [11, 0], [11, HEIGHT]])
-    image_points = np.array([[269, 25], [266, 346], [440, 27], [586, 346]])
+    world_points = np.array([
+        [0, 0], #limite superior da area grande
+        [68, 0], #limite inferior da area grande
+        [0, 11], #limite superior area pequena
+        [68, 11], #limite inferior area pequena
+        # [0, 17], #linha de fundo superior
+        # [29,17] # canto pequena area superior
+        ])
+    image_points = np.array([
+        [269, 25],#limite superior da area grande
+        [264, 344],#limite inferior da area grande
+        [442, 27], #limite superior area pequena
+        [586, 346],#limite inferior area pequena
+        # [526, 27], #linha de fundo superior
+        # [576, 102] # canto pequena area superior
+        ])
 
     x = world_points[:, 0]
     y = world_points[:, 1]
@@ -49,7 +64,7 @@ def transformate_point(point, transformation_matrix):
     homogeneous_coordinates = np.array([point[0], point[1], 1])
     dot_product = np.dot(transformation_matrix, homogeneous_coordinates)
     s = dot_product[-1] # S = last element of the array
-    coordinates = dot_product / s # (x/s, y/s, 1)
+    coordinates = dot_product / s # --> (x/s, y/s, 1)
     x,y = coordinates[0], coordinates[1]
     return (x,y)
 
@@ -59,13 +74,14 @@ def calculate_offside_points(matrix,x,y):
 
     #Tansforms the selected point from image to world coordinates
     world_point = transformate_point((x,y), inverse_matrix)
-    x = world_point[0]
+    y = world_point[1]
 
     #To draw the offside line we will have to find 2 points
-    #for that we simply mantain const our x of the world coordinate and use the minimum and
-    #maximum possible value for y. So we have a straight line crossing our selected point
-    point1 = np.array([x, 0])
-    point2 = np.array([x, HEIGHT])
+    #for that we simply mantain constant our Y of the world coordinate and use the minimum and
+    #maximum possible value for x. So we have a straight line crossing our selected point
+    #and also paralel the the goal line
+    point1 = np.array([0, y])
+    point2 = np.array([MAX_WIDTH, y])
 
     # Now we transform each of that 2 points to image coordinates
     offside_point_1 = transformate_point(point1, matrix)
@@ -76,11 +92,10 @@ def calculate_offside_points(matrix,x,y):
 
 def mouse_drawing(event, x, y, flags, data):
     if event == cv2.EVENT_LBUTTONDOWN:
-        editedImage = data["image"].copy()
+        editingImage = data["image"].copy()
         x1,y1,x2,y2 = calculate_offside_points(data["matrix"], x, y)
-        print(x1,y1,x2,y2)
-        cv2.line(editedImage,(x1, y1), (x2, y2), (0, 0, 255), 2)
-        cv2.imshow("Maracana", editedImage)
+        cv2.line(editingImage,(x1, y1), (x2, y2), (0, 0, 255), 2)
+        cv2.imshow("Maracana", editingImage)
 
 
 
