@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-def compute_homography_3d(x, y, z, u, v):
+def compute_camera_matrix(x, y, z, u, v):
     # Fulfill a matrix with the equations that determine the camera matrix
     matrix = []
     for i in range(len(x)):
@@ -66,9 +66,9 @@ def calculate_transformation_matrix():
     u = image_points[:, 0]
     v = image_points[:, 1]
 
-    return compute_homography_3d(x, y, z, u, v)
+    return compute_camera_matrix(x, y, z, u, v)
 
-#We transform our a world point/coorinate to a pixel coordinate using the dot producit with the transformation matrix (homography)
+#We transform our world point/coordinate to a pixel coordinate using the dot producit with the transformation matrix
 def transform_world_point(point, matrix):
     #We convert the point to homogeneous coordinates adding one more dimension with value 1 to our vector
     homogeneous_coordinates = np.array([point[0], point[1], point[2], 1])

@@ -3,11 +3,11 @@ import numpy as np
 
 MAX_WIDTH = 68
 
-# As we have 2D to 2D transformation we use only this function por both directions (world->pixel and pixel->world)
-def transform_point(point, transformation_matrix):
+# As we have 2D to 2D projective transformation we use only this function for both directions mapping/projection (world->pixel and pixel->world)
+def transform_point(point, projection_matrix):
     #We transform the point to homogeneous coordinates adding one more dimension with value 1 to our vector
     homogeneous_coordinates = np.array([point[0], point[1], 1])
-    dot_product = np.dot(transformation_matrix, homogeneous_coordinates)
+    dot_product = np.dot(projection_matrix, homogeneous_coordinates)
     s = dot_product[-1] # S = last element of the array
     coordinates = dot_product / s # --> (x/s, y/s, 1)
     x,y = coordinates[0], coordinates[1]
@@ -34,7 +34,7 @@ def calculate_offside_points(matrix,x,y):
 
     return int(round(offside_point_1[0])), int(round(offside_point_1[1])), int(round(offside_point_2[0])), int(round(offside_point_2[1]))
 
-# Camera matrix to relate image (2D) points with world (2D) points
+# Camera matrix to relate image (2D) points with world (2D) points (it`s homography)
 # matrix =
 #     [x[0], y[0], 1, 0, 0, 0, -u[0] * x[0], - u[0] * y[0], -u[0]],
 #     [0, 0, 0, x[0], y[0], 1, -v[0] * x[0], - v[0] * y[0], -v[0]],
@@ -62,7 +62,7 @@ def compute_homography_2d(x, y, u, v):
 
     return h
 
-def calculate_transformation_matrix():
+def calculate_projection_matrix():
     # We define our calibration points in world and image/pixel coordinates
     world_points = np.array([
         [0, 0], #limite superior da area grande
@@ -99,8 +99,8 @@ def mouse_drawing(event, x, y, flags, data):
 # função main em python
 if __name__ == '__main__' :
 
-    data = {} #We define a dic with our transformation matrix and image
-    data["matrix"] = calculate_transformation_matrix() # We calculate the planar homography to transform points
+    data = {} #We define a dic with our projection matrix and image
+    data["matrix"] = calculate_projection_matrix() # We calculate the planar homography to transform points
     data["image"] = cv2.imread('maracana2.jpg')
 
     # We show the image and set the callback to draw the line when clicked on the image
